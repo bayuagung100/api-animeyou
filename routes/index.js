@@ -11,12 +11,20 @@ module.exports = function (app) {
     app.route(apiV1+'upload').post(url.upload);
 
     // //url create user
-    app.route('/user').post(url.createuser);
+    // app.route('/user').post(url.createuser);
 
-    // //url update user
-    app.route('/user').put(url.updateuser);
+    // // //url update user
+    // app.route('/user').put(url.updateuser);
 
-    // //url delete user
-    app.route('/user').delete(url.deleteuser);
+    // // //url delete user
+    // app.route('/user').delete(url.deleteuser);
+
+    app.route(apiV1+'genre').get(url.genres);
+
+    app.route(apiV1+'producer').get(url.producers);
+
+    app.route(apiV1+'season').get(url.seasons);
+
+    app.route(apiV1+'type').get(url.types);
 
 };

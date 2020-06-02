@@ -186,6 +186,54 @@ exports.deleteuser = function (req, res) {
 };
 
 
+exports.genres = function (req, res) {
+    koneksi.query("SELECT * FROM genres ORDER BY genre ", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+            // console.log(req.params);
+        }
+
+    });
+};
+
+exports.producers = function (req, res) {
+    koneksi.query("SELECT * FROM producers ORDER BY producer ", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+            // console.log(req.params);
+        }
+
+    });
+};
+
+exports.seasons = function (req, res) {
+    koneksi.query("SELECT * FROM seasons ORDER BY year ", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+            // console.log(req.params);
+        }
+
+    });
+};
+
+exports.types = function (req, res) {
+    koneksi.query("SELECT * FROM types ORDER BY type ", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+            // console.log(req.params);
+        }
+
+    });
+};
+
 
 
 // end api v1
