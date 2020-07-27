@@ -2,10 +2,21 @@ var response = require('./res');
 var koneksi = require('./config');
 var express = require('express');
 
+
 //form-data
 var formidable = require('formidable');
 var mv = require('mv');
 //end form-data
+
+const Jikan = require('jikan-node');
+const mal = new Jikan();
+
+
+var request = require('request');
+
+const axios = require('axios');
+const cheerio = require('cheerio');
+const { text } = require('body-parser');
 
 
 // api v1
@@ -234,6 +245,134 @@ exports.types = function (req, res) {
     });
 };
 
+// exports.anime = function (req, res) {
+//     mal.findAnime('11597', 'episodes', 1)
+//     .then(info => console.log(info))
+//     .catch(err => console.log(err));
+
+// }
+
+// exports.animesearch = function (req, res) {
+//     var query = req.params.q;
+//     console.log(query);
+//     mal.search('anime', query)
+//     .then(info => response.ok(info, res))
+//     .catch(err => console.log(err));
+// }
+
+exports.widgetHeader = function (req, res) {
+    axios('https://myanimelist.net/')
+        .then(info => {
+            const html = info.data;
+            const $ = cheerio.load(html)
+
+            const urlElems = $('.widget-slide-outer')
+            // console.log(urlElems.length);
+            
+            const urlElemsTitle = $(urlElems[0]).find('li.btn-anime');
+            // console.log(urlElemsTitle.length);
+
+            const topPremierLeagueScorers = [];
+
+            urlElemsTitle.each(function () {
+                const title = $(this).find('span.title').text();
+                const href = $(this).find('a').attr('href');
+                const img = $(this).find('img').attr('data-src');
+                const idMal = href.split("/")[4];
+                topPremierLeagueScorers.push({
+                    idMal,
+                    href,
+                    title,
+                    img,
+                });
+            });
+            response.agc(topPremierLeagueScorers,res, "widget-header");
+        })
+        .catch(console.error);
+    
+}
+
+exports.animeSearch = function (req, res) {
+    var q = req.params.q;
+    var show = req.params.show;
+    
+    if (show) {
+        var url = 'https://myanimelist.net/anime.php?q='+q+'&show='+show;
+        console.log(url);
+    } else {
+        var url = 'https://myanimelist.net/anime.php?q='+q;
+        console.log(url);
+    }
+    
+    axios(url)
+        .then(info => {
+            const html = info.data;
+            const $ = cheerio.load(html)
+
+            const urlElems = $('tbody');
+            console.log(urlElems.length);
+            
+            const urlElemsArray = $(urlElems[2]).find('tr');
+            console.log(urlElemsArray.length);
+
+            const urlElemsPages = $('div').find('.spaceit a');
+            console.log(urlElemsPages.length);
+
+            const pageElemsArrays = [];
+
+            urlElemsPages.each(function () {
+                const showElems = $(this).attr('href');
+                const page = $(this).text();
+                const show = showElems.split("show=")[1];
+                if (show != undefined) {
+                    pageElemsArrays.push({
+                        show,
+                        page
+                    })
+                }
+                
+            })
+
+            const urlElemsArrays = [];
+
+            // urlElemsArray.each(function () {
+            for (let i = 1; i < urlElemsArray.length; i++) {
+
+                const href = $(urlElemsArray[i]).find('.picSurround a.hoverinfo_trigger').attr('href');
+                const title = $(urlElemsArray[i]).find('a.fw-b').text();
+                const img = $(urlElemsArray[i]).find('.picSurround img').attr('data-src');
+                const idMal = href.split("/")[4];
+                const desc = $(urlElemsArray[i]).find('.pt4').text().split("...")[0];
+                const type = $(urlElemsArray[i]).find($('[width=45]')).text();
+                const episode = $(urlElemsArray[i]).find($('[width=40]')).text();
+                const score = $(urlElemsArray[i]).find($('[width=50]')).text();
+                urlElemsArrays.push({
+                    idMal,
+                    href,
+                    title,
+                    img,
+                    desc,
+                    type,
+                    episode,
+                    score,
+                });
+            }
+            // });
+            response.agcSearch(urlElemsArrays,res, "search-results", pageElemsArrays);
+        })
+        .catch(console.error);
+    
+}
+
+function printHtml(req, res, html) {
+	res.send('<textarea cols="100%" rows="50%">'+ html + '</textarea>');
+}
+
+function filtered(array) { 
+    array.filter(function (el) {
+        return el != null;
+    });
+ } 
 
 
 // end api v1

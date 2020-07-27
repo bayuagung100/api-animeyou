@@ -27,4 +27,17 @@ module.exports = function (app) {
 
     app.route(apiV1+'type').get(url.types);
 
+
+    // app.route(apiV1+'anime').get(url.anime);
+
+    // app.route(apiV1+'anime/search/:q').get(url.animesearch);
+
+    // app.route(apiV1+'grab/widget-header').get(url.widgetHeader);
+
+    app.route(apiV1+'grab/widget-header').get(url.widgetHeader);
+
+    app.route(apiV1+'grab/anime/:q').get(url.animeSearch);
+
+    app.route(apiV1+'grab/anime/:q/:show').get(url.animeSearch);
+
 };
