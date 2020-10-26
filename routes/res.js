@@ -34,17 +34,27 @@ exports.agcSearch = function (values, res, query="", page="1",status="200") {
     res.end();
 };
 
-exports.auth = function (session, values, res) {
+exports.auth = function (token, values, res, status=200) {
     var data = {
-        'status': 200,
-        'sessions': session,
-        'values': values
+        'status': status,
+        'token': token,
+        'results': values
     };
     var api = {
         data: data
     }
     // res.writeHead(200, { 'Access-Control-Allow-Origin': '*', });
-    res.json(api);
+    res.json(data);
+    res.end();
+};
+
+exports.datatables = function (values, res) {
+
+    var data = {
+        'data': values
+    };
+    res.header("Access-Control-Allow-Origin", "*");
+    res.json(data);
     res.end();
 };
 

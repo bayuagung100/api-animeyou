@@ -3,21 +3,8 @@ module.exports = function (app) {
     var apiV1 = "/api/v1/";
     //url homenya
     app.route('/').get(url.index);
-
-    app.route(apiV1+'users/:id').get(url.userbyid);
-
+    //admin api
     app.route(apiV1+'auth').post(url.auth);
-
-    app.route(apiV1+'upload').post(url.upload);
-
-    // //url create user
-    // app.route('/user').post(url.createuser);
-
-    // // //url update user
-    // app.route('/user').put(url.updateuser);
-
-    // // //url delete user
-    // app.route('/user').delete(url.deleteuser);
 
     app.route(apiV1+'genre').get(url.genres);
 
@@ -28,16 +15,32 @@ module.exports = function (app) {
     app.route(apiV1+'type').get(url.types);
 
 
-    // app.route(apiV1+'anime').get(url.anime);
+    app.route(apiV1+'jikan/findanime/:id').get(url.jikanFindAnime);
+    app.route(apiV1+'jikan/findanime/:id/:request').get(url.jikanFindAnime);
+    app.route(apiV1+'jikan/findanime/:id/:request/:page').get(url.jikanFindAnime);
 
-    // app.route(apiV1+'anime/search/:q').get(url.animesearch);
-
-    // app.route(apiV1+'grab/widget-header').get(url.widgetHeader);
+    app.route(apiV1+'translate').post(url.translateGoogle);
+   
 
     app.route(apiV1+'grab/widget-header').get(url.widgetHeader);
 
     app.route(apiV1+'grab/anime/:q').get(url.animeSearch);
 
     app.route(apiV1+'grab/anime/:q/:show').get(url.animeSearch);
+
+
+    //datatables
+    app.route(apiV1+'dt/genrelist').get(url.dtgenrelist);
+    app.route(apiV1+'genrelist').post(url.addgenrelist);
+    app.route(apiV1+'genrelist/:id').get(url.genrelistbyid);
+    app.route(apiV1+'genrelist').put(url.updategenrelist);
+    app.route(apiV1+'genrelist/:id').delete(url.deletegenrelist);
+
+    app.route(apiV1+'dt/producerlist').get(url.dtproducerlist);
+    app.route(apiV1+'producerlist').post(url.addproducerlist);
+    app.route(apiV1+'producerlist/:id').get(url.producerlistbyid);
+    app.route(apiV1+'producerlist').put(url.updateproducerlist);
+    app.route(apiV1+'producerlist/:id').delete(url.deleteproducerlist);
+    //end datatables
 
 };

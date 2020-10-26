@@ -18,6 +18,29 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { text } = require('body-parser');
 
+exports.translateGoogle = function (req, res) {
+    var translated = req.body.translate;
+    const translate = require('@k3rn31p4nic/google-translate-api');
+    translate(translated, { to: 'id' }).then(trans => {
+        response.ok(trans.text, res)
+        // console.log(trans.text); // OUTPUT: You are amazing!
+      }).catch(err => {
+        console.error(err);
+      });
+      
+}
+
+//jikan
+
+exports.jikanFindAnime = function(req, res) {
+    var id = req.params.id;
+    var request = req.params.request;
+    var page = req.params.page;
+    mal.findAnime(id, request, page)
+    .then(info => response.ok(info,res))
+    .catch(err => console.log(err));
+}
+//end jikan
 
 // api v1
 
@@ -52,7 +75,7 @@ exports.auth = function (req, res) {
             if (error) {
                 console.log(error);
             } else if (rows.length > 0) {
-                response.ok(rows, res);
+                response.auth(pass, rows, res);
             } else {
                 response.ok("Incorrect Username and/or Password!", res, 202);
             }
@@ -374,6 +397,153 @@ function filtered(array) {
     });
  } 
 
+
+exports.dtgenrelist = function (req, res) {
+    koneksi.query("SELECT * FROM genres", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            var Obj = [];
+            // console.log(Object.values(rows))
+            var no = 1;
+            rows.forEach(function (element, index) { 
+                
+                var id = element.id
+                var genre = element.genre
+                
+                Obj.push([
+                    no=no,
+                    genre=genre,
+                    id=id,
+                ])
+                no++;
+            }); 
+            response.datatables(Obj, res);
+        }
+
+    });
+};
+
+exports.addgenrelist = function (req, res) {
+    var genre = req.body.genre;
+
+    koneksi.query("INSERT INTO genres (genre) VALUES (?)", [genre], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+        }
+    });
+};
+
+exports.genrelistbyid = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("SELECT * FROM genres WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+        }
+    });
+};
+
+exports.updategenrelist = function (req, res) {
+    var id = req.body.id;
+    var genre = req.body.genre;
+
+    koneksi.query("UPDATE genres SET genre=? WHERE id=?", [genre, id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok("Berhasil update", res);
+        }
+    });
+};
+
+exports.deletegenrelist = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("DELETE FROM genres WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok("Berhasil delete", res);
+        }
+    });
+};
+
+
+exports.dtproducerlist = function (req, res) {
+    koneksi.query("SELECT * FROM producers", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            var Obj = [];
+            // console.log(Object.values(rows))
+            var no = 1;
+            rows.forEach(function (element, index) { 
+                
+                var id = element.id
+                var producer = element.producer
+                
+                Obj.push([
+                    no=no,
+                    producer=producer,
+                    id=id,
+                ])
+                no++;
+            }); 
+            response.datatables(Obj, res);
+        }
+
+    });
+};
+
+exports.addproducerlist = function (req, res) {
+    var producer = req.body.producer;
+
+    koneksi.query("INSERT INTO producers (producer) VALUES (?)", [producer], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+        }
+    });
+};
+
+exports.producerlistbyid = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("SELECT * FROM producers WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+        }
+    });
+};
+
+exports.updateproducerlist = function (req, res) {
+    var id = req.body.id;
+    var producer = req.body.producer;
+
+    koneksi.query("UPDATE producers SET producer=? WHERE id=?", [producer, id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok("Berhasil update", res);
+        }
+    });
+};
+
+exports.deleteproducerlist = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("DELETE FROM producers WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok("Berhasil delete", res);
+        }
+    });
+};
 
 // end api v1
 
