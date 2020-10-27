@@ -48,9 +48,12 @@ exports.auth = function (token, values, res, status=200) {
     res.end();
 };
 
-exports.datatables = function (values, res) {
+exports.datatables = function (draw, recordsTotal, recordsFiltered, values, res) {
 
     var data = {
+        'draw': draw,
+        "recordsTotal": recordsTotal,
+        "recordsFiltered": recordsFiltered,
         'data': values
     };
     res.header("Access-Control-Allow-Origin", "*");

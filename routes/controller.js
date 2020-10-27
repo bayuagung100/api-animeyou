@@ -397,28 +397,50 @@ function filtered(array) {
     });
  } 
 
+function escapeSansQuotes(connection, criterion) {
+    return connection.escape(criterion).match(/^'(\w+)'$/)[1];
+}
+  
 
 exports.dtgenrelist = function (req, res) {
-    koneksi.query("SELECT * FROM genres", function (error, rows, fields) {
+    // console.log(req.body)
+    var draw = req.body.draw;
+    var order = req.body.order[0].dir;
+    var start = parseInt(req.body.start);
+    var end = parseInt(req.body.length);
+    var search = req.body.search.value;
+    if (search == '') {
+        var query = "SELECT * FROM genres ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    } else {
+        var query = "SELECT * FROM genres WHERE genre like '%"+search+"%' ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    }
+    // console.log(query)
+    // console.log(search)
+    koneksi.query(query,  function (error, rows, fields) {
         if (error) {
             console.log(error);
         } else {
-            var Obj = [];
-            // console.log(Object.values(rows))
-            var no = 1;
-            rows.forEach(function (element, index) { 
-                
-                var id = element.id
-                var genre = element.genre
-                
-                Obj.push([
-                    no=no,
-                    genre=genre,
-                    id=id,
-                ])
-                no++;
-            }); 
-            response.datatables(Obj, res);
+            koneksi.query("SELECT * FROM genres ",  function (error2, rows2, fields2) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var recordsTotal = rows2.length;
+                    var Obj = [];
+                    // var no = 1;
+                    rows.forEach(function (element, index) { 
+                        var id = element.id
+                        var genre = element.genre
+                        Obj.push([
+                            // no=no,
+                            genre=genre,
+                            id=id,
+                        ])
+                        // no++;
+                    }); 
+                    response.datatables(draw, recordsTotal, recordsTotal, Obj, res);
+                }
+            })
+            
         }
 
     });
@@ -473,26 +495,42 @@ exports.deletegenrelist = function (req, res) {
 
 
 exports.dtproducerlist = function (req, res) {
-    koneksi.query("SELECT * FROM producers", function (error, rows, fields) {
+    // console.log(req.body)
+    var draw = req.body.draw;
+    var order = req.body.order[0].dir;
+    var start = parseInt(req.body.start);
+    var end = parseInt(req.body.length);
+    var search = req.body.search.value;
+    if (search == '') {
+        var query = "SELECT * FROM producers ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    } else {
+        var query = "SELECT * FROM producers WHERE producer like '%"+search+"%' ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    }
+    
+    koneksi.query(query, function (error, rows, fields) {
         if (error) {
             console.log(error);
         } else {
-            var Obj = [];
-            // console.log(Object.values(rows))
-            var no = 1;
-            rows.forEach(function (element, index) { 
-                
-                var id = element.id
-                var producer = element.producer
-                
-                Obj.push([
-                    no=no,
-                    producer=producer,
-                    id=id,
-                ])
-                no++;
-            }); 
-            response.datatables(Obj, res);
+            koneksi.query("SELECT * FROM producers ",  function (error2, rows2, fields2) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var recordsTotal = rows2.length;
+                    var Obj = [];
+                    // var no = 1;
+                    rows.forEach(function (element, index) { 
+                        var id = element.id
+                        var producer = element.producer
+                        Obj.push([
+                            // no=no,
+                            producer=producer,
+                            id=id,
+                        ])
+                        // no++;
+                    }); 
+                    response.datatables(draw, recordsTotal, recordsTotal, Obj, res);
+                }
+            })
         }
 
     });

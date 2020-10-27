@@ -30,13 +30,13 @@ module.exports = function (app) {
 
 
     //datatables
-    app.route(apiV1+'dt/genrelist').get(url.dtgenrelist);
+    app.route(apiV1+'dt/genrelist').post(url.dtgenrelist);
     app.route(apiV1+'genrelist').post(url.addgenrelist);
     app.route(apiV1+'genrelist/:id').get(url.genrelistbyid);
     app.route(apiV1+'genrelist').put(url.updategenrelist);
     app.route(apiV1+'genrelist/:id').delete(url.deletegenrelist);
 
-    app.route(apiV1+'dt/producerlist').get(url.dtproducerlist);
+    app.route(apiV1+'dt/producerlist').post(url.dtproducerlist);
     app.route(apiV1+'producerlist').post(url.addproducerlist);
     app.route(apiV1+'producerlist/:id').get(url.producerlistbyid);
     app.route(apiV1+'producerlist').put(url.updateproducerlist);
