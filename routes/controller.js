@@ -400,7 +400,244 @@ function filtered(array) {
 function escapeSansQuotes(connection, criterion) {
     return connection.escape(criterion).match(/^'(\w+)'$/)[1];
 }
-  
+
+
+exports.dtanimelist = function (req, res) {
+    // console.log(req.body)
+    var draw = req.body.draw;
+    var order = req.body.order[0].dir;
+    var start = parseInt(req.body.start);
+    var end = parseInt(req.body.length);
+    var search = req.body.search.value;
+    if (search == '') {
+        var query = "SELECT * FROM anime ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    } else {
+        var query = "SELECT * FROM anime WHERE title like '%"+search+"%' ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    }
+    // console.log(query)
+    // console.log(search)
+    koneksi.query(query,  function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            koneksi.query("SELECT * FROM anime ",  function (error2, rows2, fields2) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var recordsTotal = rows2.length;
+                    var Obj = [];
+                    // var no = 1;
+                    rows.forEach(function (element, index) { 
+                        var id = element.id;
+                        var title = element.title;
+                        const hari = element.published_time.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); // hari, tanggal(angka) bulan(text) tahun(angka)
+                        const menit = element.published_time.toLocaleTimeString(); // 00:00:00 AM/PM
+                        var published_time = hari + ' at ' + menit
+
+                        Obj.push([
+                            // no=no,
+                            title=title,
+                            published_time=published_time,
+                            id=id,
+                        ])
+                        // no++;
+                    }); 
+                    response.datatables(draw, recordsTotal, recordsTotal, Obj, res);
+                }
+            })
+            
+        }
+
+    });
+};
+
+exports.addanimelist = function (req, res) {
+    var form = new formidable.IncomingForm();
+    // console.log(form);
+    // manangani upload file
+    form.parse(req, function (err, fields, files) {
+        var idMal = fields.idMal;
+        var url = fields.url;
+        var images_name = files.images.name;
+        var images_path = files.images.path;
+        var images_newpath = "./public/images/" + images_name.replace(/\s+/g, '-').toLowerCase();
+        var images_url = "images/" + images_name.replace(/\s+/g, '-').toLowerCase();
+        var title = fields.title;
+        var title_english = fields.title_english==="" ? null:fields.title_english;
+        var title_synonyms = fields.title_synonyms==="" ? null:fields.title_synonyms;
+        var title_japanese = fields.title_japanese==="" ? null:fields.title_japanese;
+        var types = fields.types;
+        var episodes = fields.episodes;
+        var status = fields.status;
+        var aired = fields.aired;
+        var premiered = fields.premiered;
+        var arr_premiered = premiered.split(' ');
+        var season = arr_premiered[0];
+        var year = arr_premiered[1];
+        var broadcast = fields.broadcast;
+        var producers = fields.producers;
+        var arr_producers = producers.split(',');
+        var licensors = fields.licensors;
+        var arr_licensors = licensors.split(',');
+        var studios = fields.studios;
+        var arr_studios = studios.split(',');
+        var source = fields.source;
+        var genres = fields.genres;
+        var arr_genres = genres.split(',');
+        var duration = fields.duration;
+        var rating = fields.rating;
+        var score = fields.score;
+        var synopsis = fields.synopsis;
+        var views = fields.views;
+        var published_time = fields.published_time;
+        var modified_time = fields.modified_time;
+
+        // console.log(arr_producers[0])
+        
+        //insert seasons jika belum ada data di database
+        koneksi.query("SELECT * FROM seasons WHERE season=? AND year=?", [season, year], function (error, rows, fields) {
+            if (error) {
+                console.log(error);
+            } else {
+                var numRows = rows.length;
+                if (numRows===0) {
+                    koneksi.query("INSERT INTO seasons (season, year) VALUES (?,?)", [season, year], function (error, rows, fields) {
+                        if (error) {
+                            console.log(error);
+                        }
+                    });
+                }
+            }
+        });
+
+        //insert producers, licensors, studios, genres jika belum ada data di database
+        if (producers != "") {
+            arr_producers.forEach(value => {
+                koneksi.query("SELECT * FROM producers WHERE producer=?", [value], function (error, rows, fields) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        var numRows = rows.length;
+                        if (numRows===0) {
+                            koneksi.query("INSERT INTO producers (producer) VALUES (?)", [value], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        } else {
+            producers = null
+        }
+
+        if (licensors != "") {
+            arr_licensors.forEach(value => {
+                koneksi.query("SELECT * FROM producers WHERE producer=?", [value], function (error, rows, fields) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        var numRows = rows.length;
+                        if (numRows===0) {
+                            koneksi.query("INSERT INTO producers (producer) VALUES (?)", [value], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        } else {
+            licensors = null
+        }
+        
+        if (studios != "") {
+            arr_studios.forEach(value => {
+                koneksi.query("SELECT * FROM producers WHERE producer=?", [value], function (error, rows, fields) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        var numRows = rows.length;
+                        if (numRows===0) {
+                            koneksi.query("INSERT INTO producers (producer) VALUES (?)", [value], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        } else {
+            studios = null
+        }
+        
+        arr_genres.forEach(value => {
+            koneksi.query("SELECT * FROM genres WHERE genre=?", [value], function (error, rows, fields) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var numRows = rows.length;
+                    if (numRows===0) {
+                        koneksi.query("INSERT INTO genres (genre) VALUES (?)", [value], function (error, rows, fields) {
+                            if (error) {
+                                console.log(error);
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        koneksi.query("SELECT * FROM anime WHERE idMal=? OR title=?", [idMal, title], function (error, rows, fields) {
+            if (error) {
+                console.log(error);
+            } else {
+                var numRows = rows.length
+                if (numRows===0) {
+                    mv(images_path, images_newpath, function (err) {
+                        if (err) { 
+                            console.log(err); 
+                        } else {
+                            koneksi.query("INSERT INTO anime (idMal,url,images,images_url,title,title_english,title_synonyms,title_japanese,types,episodes,status,aired,premiered,broadcast,producers,licensors,studios,source,genres,duration,rating,score,synopsis,views,published_time,modified_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [idMal,url,images_name,images_url,title,title_english,title_synonyms,title_japanese,types,episodes,status,aired,premiered,broadcast,producers,licensors,studios,source,genres,duration,rating,score,synopsis,views,published_time,modified_time], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    response.addAnime('Success Tambah Anime', res);
+                                }
+                            });
+                        }
+                    })
+                } else {
+                    //status 406 = not acceptable
+                    response.addAnime('Judul Anime Sudah Ada', res, 406);
+                }
+            }
+        })
+    })
+}
+exports.animelistbyid = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("SELECT * FROM anime WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+        }
+    });
+};
+exports.deleteanimelist = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("DELETE FROM anime WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok("Berhasil delete", res);
+        }
+    });
+};
 
 exports.dtgenrelist = function (req, res) {
     // console.log(req.body)

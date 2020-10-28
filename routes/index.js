@@ -30,6 +30,11 @@ module.exports = function (app) {
 
 
     //datatables
+    app.route(apiV1+'dt/animelist').post(url.dtanimelist);
+    app.route(apiV1+'animelist').post(url.addanimelist);
+    app.route(apiV1+'animelist/:id').get(url.animelistbyid);
+    app.route(apiV1+'animelist/:id').delete(url.deleteanimelist);
+
     app.route(apiV1+'dt/genrelist').post(url.dtgenrelist);
     app.route(apiV1+'genrelist').post(url.addgenrelist);
     app.route(apiV1+'genrelist/:id').get(url.genrelistbyid);

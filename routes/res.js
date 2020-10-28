@@ -61,3 +61,15 @@ exports.datatables = function (draw, recordsTotal, recordsFiltered, values, res)
     res.end();
 };
 
+exports.addAnime = function (message, res, status="200") {
+
+    var data = {
+        'status': status,
+        'message': message
+    };
+
+    res.header("Access-Control-Allow-Origin", "*");
+    res.json(data);
+    res.end();
+};
+
