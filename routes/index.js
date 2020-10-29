@@ -33,6 +33,7 @@ module.exports = function (app) {
     app.route(apiV1+'dt/animelist').post(url.dtanimelist);
     app.route(apiV1+'animelist').post(url.addanimelist);
     app.route(apiV1+'animelist/:id').get(url.animelistbyid);
+    app.route(apiV1+'animelist').put(url.updateanimelist);
     app.route(apiV1+'animelist/:id').delete(url.deleteanimelist);
 
     app.route(apiV1+'dt/genrelist').post(url.dtgenrelist);

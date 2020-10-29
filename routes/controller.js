@@ -471,10 +471,7 @@ exports.addanimelist = function (req, res) {
         var status = fields.status;
         var aired = fields.aired;
         var premiered = fields.premiered;
-        var arr_premiered = premiered.split(' ');
-        var season = arr_premiered[0];
-        var year = arr_premiered[1];
-        var broadcast = fields.broadcast;
+        var broadcast = fields.broadcast==="" ? null:fields.broadcast;
         var producers = fields.producers;
         var arr_producers = producers.split(',');
         var licensors = fields.licensors;
@@ -495,21 +492,28 @@ exports.addanimelist = function (req, res) {
         // console.log(arr_producers[0])
         
         //insert seasons jika belum ada data di database
-        koneksi.query("SELECT * FROM seasons WHERE season=? AND year=?", [season, year], function (error, rows, fields) {
-            if (error) {
-                console.log(error);
-            } else {
-                var numRows = rows.length;
-                if (numRows===0) {
-                    koneksi.query("INSERT INTO seasons (season, year) VALUES (?,?)", [season, year], function (error, rows, fields) {
-                        if (error) {
-                            console.log(error);
-                        }
-                    });
-                }
-            }
-        });
+        if (premiered != "") {
+            var arr_premiered = premiered.split(' ');
+            var season = arr_premiered[0];
+            var year = arr_premiered[1];
 
+            koneksi.query("SELECT * FROM seasons WHERE season=? AND year=?", [season, year], function (error, rows, fields) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var numRows = rows.length;
+                    if (numRows===0) {
+                        koneksi.query("INSERT INTO seasons (season, year) VALUES (?,?)", [season, year], function (error, rows, fields) {
+                            if (error) {
+                                console.log(error);
+                            }
+                        });
+                    }
+                }
+            });
+        } else {
+            premiered = null
+        }
         //insert producers, licensors, studios, genres jika belum ada data di database
         if (producers != "") {
             arr_producers.forEach(value => {
@@ -628,6 +632,193 @@ exports.animelistbyid = function (req, res) {
         }
     });
 };
+exports.updateanimelist = function (req, res) {
+    var form = new formidable.IncomingForm();
+    // console.log(form);
+    // manangani upload file
+    form.parse(req, function (err, fields, files) {
+        var id = fields.id;
+        var idMal = fields.idMal;
+        var url = fields.url;
+        var images = fields.images;
+        var title = fields.title;
+        var title_english = fields.title_english==="" ? null:fields.title_english;
+        var title_synonyms = fields.title_synonyms==="" ? null:fields.title_synonyms;
+        var title_japanese = fields.title_japanese==="" ? null:fields.title_japanese;
+        var types = fields.types;
+        var episodes = fields.episodes;
+        var status = fields.status;
+        var aired = fields.aired;
+        var premiered = fields.premiered;
+        var broadcast = fields.broadcast==="" ? null:fields.broadcast;
+        var producers = fields.producers;
+        var arr_producers = producers.split(',');
+        var licensors = fields.licensors;
+        var arr_licensors = licensors.split(',');
+        var studios = fields.studios;
+        var arr_studios = studios.split(',');
+        var source = fields.source;
+        var genres = fields.genres;
+        var arr_genres = genres.split(',');
+        var duration = fields.duration;
+        var rating = fields.rating;
+        var score = fields.score;
+        var synopsis = fields.synopsis;
+        var views = fields.views;
+        var published_time = fields.published_time;
+        var modified_time = fields.modified_time;
+
+        // console.log(arr_producers[0])
+        
+        //insert seasons jika belum ada data di database
+        if (premiered != "") {
+            var arr_premiered = premiered.split(' ');
+            var season = arr_premiered[0];
+            var year = arr_premiered[1];
+
+            koneksi.query("SELECT * FROM seasons WHERE season=? AND year=?", [season, year], function (error, rows, fields) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var numRows = rows.length;
+                    if (numRows===0) {
+                        koneksi.query("INSERT INTO seasons (season, year) VALUES (?,?)", [season, year], function (error, rows, fields) {
+                            if (error) {
+                                console.log(error);
+                            }
+                        });
+                    }
+                }
+            });
+        } else {
+            premiered = null
+        }
+        
+
+        //insert producers, licensors, studios, genres jika belum ada data di database
+        if (producers != "") {
+            arr_producers.forEach(value => {
+                koneksi.query("SELECT * FROM producers WHERE producer=?", [value], function (error, rows, fields) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        var numRows = rows.length;
+                        if (numRows===0) {
+                            koneksi.query("INSERT INTO producers (producer) VALUES (?)", [value], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        } else {
+            producers = null
+        }
+
+        if (licensors != "") {
+            arr_licensors.forEach(value => {
+                koneksi.query("SELECT * FROM producers WHERE producer=?", [value], function (error, rows, fields) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        var numRows = rows.length;
+                        if (numRows===0) {
+                            koneksi.query("INSERT INTO producers (producer) VALUES (?)", [value], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        } else {
+            licensors = null
+        }
+        
+        if (studios != "") {
+            arr_studios.forEach(value => {
+                koneksi.query("SELECT * FROM producers WHERE producer=?", [value], function (error, rows, fields) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        var numRows = rows.length;
+                        if (numRows===0) {
+                            koneksi.query("INSERT INTO producers (producer) VALUES (?)", [value], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        } else {
+            studios = null
+        }
+        
+        arr_genres.forEach(value => {
+            koneksi.query("SELECT * FROM genres WHERE genre=?", [value], function (error, rows, fields) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var numRows = rows.length;
+                    if (numRows===0) {
+                        koneksi.query("INSERT INTO genres (genre) VALUES (?)", [value], function (error, rows, fields) {
+                            if (error) {
+                                console.log(error);
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        koneksi.query("SELECT * FROM anime WHERE id=?", [id], function (error, rows, fields) {
+            if (error) {
+                console.log(error);
+            } else {    
+                koneksi.query("SELECT * FROM anime WHERE id!=? AND title=?", [id, title], function (error2, rows2, fields2) {
+                    if (error2) {
+                        console.log(error2);
+                    } else {
+                        var numRows = rows2.length
+                        if (numRows===0) {
+                            if (rows[0].images === images) {
+                                console.log("gambar sama");
+                                var images_name = rows[0].images;
+                                var images_url = rows[0].images_url;
+                            } else {
+                                console.log("gambar beda")
+                                var images_name = files.images.name;
+                                var images_path = files.images.path;
+                                var images_newpath = "./public/images/" + images_name.replace(/\s+/g, '-').toLowerCase();
+                                var images_url = "images/" + images_name.replace(/\s+/g, '-').toLowerCase();
+                                mv(images_path, images_newpath, function (err) {
+                                    if (err) { 
+                                        console.log(err); 
+                                    }
+                                })
+                            }
+                            koneksi.query("UPDATE anime SET url=?, images=?, images_url=?, title=?, title_english=?, title_synonyms=?, title_japanese=?, types=?, episodes=?, status=?, aired=?, premiered=?, broadcast=?, producers=?, licensors=?, studios=?, source=?, genres=?, duration=?, rating=?, score=?, synopsis=?, modified_time=? WHERE id=?", [url, images_name, images_url, title, title_english, title_synonyms, title_japanese, types, episodes, status, aired, premiered, broadcast, producers, licensors, studios,source, genres, duration, rating, score, synopsis, modified_time, id], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    response.addAnime('Success Edit Anime', res);
+                                }
+                            });
+                        } else {
+                            //status 406 = not acceptable
+                            response.addAnime('Judul Anime Sudah Ada', res, 406);
+                        }
+                    }
+                })
+            }
+        })
+    })
+}
 exports.deleteanimelist = function (req, res) {
     var id = req.params.id;
     koneksi.query("DELETE FROM anime WHERE id=?", [id], function (error, rows, fields) {
