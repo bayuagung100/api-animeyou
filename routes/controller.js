@@ -46,6 +46,15 @@ exports.jikanFindAnime = function(req, res) {
 
 /* GET home page. */
 exports.index = function (req, res) {
+    const shortid = require('shortid')
+    let random = shortid.generate('4jEzxPYZu');
+    if (random === '4jEzxPYZu') {
+        random = shortid.generate();
+        console.log('new '+random)
+    } else {
+        console.log(random)
+    }
+    
     res.render('index', { title: 'Api Animeyou' });
 };
 
@@ -401,6 +410,23 @@ function escapeSansQuotes(connection, criterion) {
     return connection.escape(criterion).match(/^'(\w+)'$/)[1];
 }
 
+exports.selectAnime = function(req, res) {
+    koneksi.query("SELECT * FROM anime ORDER BY id DESC", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            var Obj = [];
+            rows.forEach(function (el, index) {
+                Obj.push({
+                    label: el.title,
+                    value: el.title,
+                    animeId: el.id,
+                })
+            })
+            response.select2(Obj, res);
+        }
+    })
+}
 
 exports.dtanimelist = function (req, res) {
     // console.log(req.body)
@@ -490,8 +516,15 @@ exports.addanimelist = function (req, res) {
         var modified_time = fields.modified_time;
 
         // console.log(arr_producers[0])
+
+        let buff = new Buffer(url);
+        let base64data = buff.toString('base64');
+        // console.log('"' + data + '" converted to Base64 is "' + base64data + '"');
+
+        var shortid = require('shortid');
+        var randomid = shortid.generate();
         
-        //insert seasons jika belum ada data di database
+        // insert seasons jika belum ada data di database
         if (premiered != "") {
             var arr_premiered = premiered.split(' ');
             var season = arr_premiered[0];
@@ -605,13 +638,23 @@ exports.addanimelist = function (req, res) {
                         if (err) { 
                             console.log(err); 
                         } else {
-                            koneksi.query("INSERT INTO anime (idMal,url,images,images_url,title,title_english,title_synonyms,title_japanese,types,episodes,status,aired,premiered,broadcast,producers,licensors,studios,source,genres,duration,rating,score,synopsis,views,published_time,modified_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [idMal,url,images_name,images_url,title,title_english,title_synonyms,title_japanese,types,episodes,status,aired,premiered,broadcast,producers,licensors,studios,source,genres,duration,rating,score,synopsis,views,published_time,modified_time], function (error, rows, fields) {
-                                if (error) {
-                                    console.log(error);
+                            koneksi.query("SELECT * FROM anime WHERE base64=?", [randomid], function (error3, rows3, fields3) {
+                                if (error3) {
+                                    console.log(error3);
                                 } else {
-                                    response.addAnime('Success Tambah Anime', res);
+                                    var cekRows = rows3.length;
+                                    if (cekRows>0) {
+                                        randomid = shortid.generate();
+                                    }
+                                    koneksi.query("INSERT INTO anime (idMal,base64,url,images,images_url,title,title_english,title_synonyms,title_japanese,types,episodes,status,aired,premiered,broadcast,producers,licensors,studios,source,genres,duration,rating,score,synopsis,views,published_time,modified_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [idMal,randomid,url,images_name,images_url,title,title_english,title_synonyms,title_japanese,types,episodes,status,aired,premiered,broadcast,producers,licensors,studios,source,genres,duration,rating,score,synopsis,views,published_time,modified_time], function (error, rows, fields) {
+                                        if (error) {
+                                            console.log(error);
+                                        } else {
+                                            response.addAnime('Success Tambah Anime', res);
+                                        }
+                                    });
                                 }
-                            });
+                            })
                         }
                     })
                 } else {
@@ -669,6 +712,9 @@ exports.updateanimelist = function (req, res) {
         var modified_time = fields.modified_time;
 
         // console.log(arr_producers[0])
+
+        let buff = new Buffer(url);
+        let base64data = buff.toString('base64');
         
         //insert seasons jika belum ada data di database
         if (premiered != "") {
@@ -802,6 +848,7 @@ exports.updateanimelist = function (req, res) {
                                     }
                                 })
                             }
+                            
                             koneksi.query("UPDATE anime SET url=?, images=?, images_url=?, title=?, title_english=?, title_synonyms=?, title_japanese=?, types=?, episodes=?, status=?, aired=?, premiered=?, broadcast=?, producers=?, licensors=?, studios=?, source=?, genres=?, duration=?, rating=?, score=?, synopsis=?, modified_time=? WHERE id=?", [url, images_name, images_url, title, title_english, title_synonyms, title_japanese, types, episodes, status, aired, premiered, broadcast, producers, licensors, studios,source, genres, duration, rating, score, synopsis, modified_time, id], function (error, rows, fields) {
                                 if (error) {
                                     console.log(error);
@@ -822,6 +869,220 @@ exports.updateanimelist = function (req, res) {
 exports.deleteanimelist = function (req, res) {
     var id = req.params.id;
     koneksi.query("DELETE FROM anime WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok("Berhasil delete", res);
+        }
+    });
+};
+
+
+exports.dtanimeepisodelist = function (req, res) {
+    // console.log(req.body)
+    var draw = req.body.draw;
+    var order = req.body.order[0].dir;
+    var start = parseInt(req.body.start);
+    var end = parseInt(req.body.length);
+    var search = req.body.search.value;
+    if (search == '') {
+        var query = "SELECT * FROM anime_episode ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    } else {
+        var query = "SELECT * FROM anime_episode WHERE judul like '%"+search+"%' ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    }
+    // console.log(query)
+    // console.log(search)
+    koneksi.query(query,  function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            koneksi.query("SELECT * FROM anime_episode ",  function (error2, rows2, fields2) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    var recordsTotal = rows2.length;
+                    var Obj = [];
+                    // var no = 1;
+                    rows.forEach(function (element, index) { 
+                        var id = element.id;
+                        var title = element.judul;
+                        const hari = element.published_time.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); // hari, tanggal(angka) bulan(text) tahun(angka)
+                        const menit = element.published_time.toLocaleTimeString(); // 00:00:00 AM/PM
+                        var published_time = hari + ' at ' + menit
+
+                        Obj.push([
+                            // no=no,
+                            title=title,
+                            published_time=published_time,
+                            id=id,
+                        ])
+                        // no++;
+                    }); 
+                    response.datatables(draw, recordsTotal, recordsTotal, Obj, res);
+                }
+            })
+            
+        }
+
+    });
+};
+exports.addanimeepisodelist = function (req, res) {
+    var form = new formidable.IncomingForm();
+    // console.log(form);
+    // manangani upload file
+    form.parse(req, function (err, fields, files) {
+        var animeId = fields.animeId;
+        var judul = fields.judul;
+        var url = fields.url;
+        var episode = fields.episode;
+        var gambar_name = files.gambar.name;
+        var gambar_path = files.gambar.path;
+        var gambar_newpath = "./public/images/" + gambar_name.replace(/\s+/g, '-').toLowerCase();
+        var gambar_url = "images/" + gambar_name.replace(/\s+/g, '-').toLowerCase();
+        var blogger = fields.blogger;
+        var mkv_240p = fields.mkv_240p;
+        var mkv_360p = fields.mkv_360p;
+        var mkv_480p = fields.mkv_480p;
+        var mkv_720p = fields.mkv_720p;
+        var mkv_1080p = fields.mkv_1080p;
+        var mp4_240p = fields.mp4_240p;
+        var mp4_360p = fields.mp4_360p;
+        var mp4_480p = fields.mp4_480p;
+        var mp4_720p = fields.mp4_720p;
+        var mp4_1080p = fields.mp4_1080p;
+        var views = fields.views;
+        var published_time = fields.published_time;
+        var modified_time = fields.modified_time;
+
+        let buff = new Buffer(url);
+        let base64data = buff.toString('base64');
+
+        var shortid = require('shortid');
+        var randomid = shortid.generate();
+
+        koneksi.query("SELECT * FROM anime_episode WHERE judul=?", [judul], function (error, rows, fields) {
+            if (error) {
+                console.log(error);
+            } else {
+                var numRows = rows.length
+                if (numRows===0) {
+                    mv(gambar_path, gambar_newpath, function (err) {
+                        if (err) { 
+                            console.log(err); 
+                        } else {
+                            koneksi.query("SELECT * FROM anime_episode WHERE base64=?", [randomid], function (error3, rows3, fields3) {
+                                if (error3) {
+                                    console.log(error3);
+                                } else {
+                                    var cekRows = rows3.length;
+                                    if (cekRows>0) {
+                                        randomid = shortid.generate();
+                                    }
+                                    koneksi.query("INSERT INTO anime_episode (animeId,judul,base64,url,episode,gambar,gambar_url,blogger,mkv_240p,mkv_360p,mkv_480p,mkv_720p,mkv_1080p,mp4_240p,mp4_360p,mp4_480p,mp4_720p,mp4_1080p,views,published_time,modified_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", [animeId,judul,randomid,url,episode,gambar_name,gambar_url,blogger,mkv_240p,mkv_360p,mkv_480p,mkv_720p,mkv_1080p,mp4_240p,mp4_360p,mp4_480p,mp4_720p,mp4_1080p,views,published_time,modified_time], function (error, rows, fields) {
+                                        if (error) {
+                                            console.log(error);
+                                        } else {
+                                            response.addAnime('Success Tambah Episode', res);
+                                        }
+                                    });
+                                }
+                            })
+                        }
+                    })
+                } else {
+                    //status 406 = not acceptable
+                    response.addAnime('Judul Episode Sudah Ada', res, 406);
+                }
+            }
+        })
+    })
+}
+exports.animeepisodelistbyid = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("SELECT * FROM anime_episode WHERE id=?", [id], function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            response.ok(rows, res);
+        }
+    });
+};
+exports.updateanimeepisodelist = function (req, res) {
+    var form = new formidable.IncomingForm();
+    // console.log(form);
+    // manangani upload file
+    form.parse(req, function (err, fields, files) {
+        var id = fields.id;
+        var animeId = fields.animeId;
+        var judul = fields.judul;
+        var url = fields.url;
+        var episode = fields.episode;
+        var gambar = fields.gambar;
+        var blogger = fields.blogger;
+        var mkv_240p = fields.mkv_240p;
+        var mkv_360p = fields.mkv_360p;
+        var mkv_480p = fields.mkv_480p;
+        var mkv_720p = fields.mkv_720p;
+        var mkv_1080p = fields.mkv_1080p;
+        var mp4_240p = fields.mp4_240p;
+        var mp4_360p = fields.mp4_360p;
+        var mp4_480p = fields.mp4_480p;
+        var mp4_720p = fields.mp4_720p;
+        var mp4_1080p = fields.mp4_1080p;
+        var modified_time = fields.modified_time;
+
+        // console.log(arr_producers[0])
+
+        let buff = new Buffer(url);
+        let base64data = buff.toString('base64');
+
+        koneksi.query("SELECT * FROM anime_episode WHERE id=?", [id], function (error, rows, fields) {
+            if (error) {
+                console.log(error);
+            } else {    
+                koneksi.query("SELECT * FROM anime_episode WHERE id!=? AND judul=?", [id, judul], function (error2, rows2, fields2) {
+                    if (error2) {
+                        console.log(error2);
+                    } else {
+                        var numRows = rows2.length
+                        if (numRows===0) {
+                            if (rows[0].gambar === gambar) {
+                                console.log("gambar sama");
+                                var gambar_name = rows[0].gambar;
+                                var gambar_url = rows[0].gambar_url;
+                            } else {
+                                console.log("gambar beda")
+                                var gambar_name = files.gambar.name;
+                                var gambar_path = files.gambar.path;
+                                var gambar_newpath = "./public/images/" + gambar_name.replace(/\s+/g, '-').toLowerCase();
+                                var gambar_url = "images/" + gambar_name.replace(/\s+/g, '-').toLowerCase();
+                                mv(gambar_path, gambar_newpath, function (err) {
+                                    if (err) { 
+                                        console.log(err); 
+                                    }
+                                })
+                            }
+                            
+                            koneksi.query("UPDATE anime_episode SET animeId=?,judul=?,url=?,episode=?,gambar=?,gambar_url=?,blogger=?,mkv_240p=?,mkv_360p=?,mkv_480p=?,mkv_720p=?,mkv_1080p=?,mp4_240p=?,mp4_360p=?,mp4_480p=?,mp4_720p=?,mp4_1080p=?,modified_time=? WHERE id=?", [animeId,judul,url,episode,gambar_name,gambar_url,blogger,mkv_240p,mkv_360p,mkv_480p,mkv_720p,mkv_1080p,mp4_240p,mp4_360p,mp4_480p,mp4_720p,mp4_1080p,modified_time,id], function (error, rows, fields) {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    response.addAnime('Success Edit Episode', res);
+                                }
+                            });
+                        } else {
+                            //status 406 = not acceptable
+                            response.addAnime('Judul Episode Sudah Ada', res, 406);
+                        }
+                    }
+                })
+            }
+        })
+    })
+}
+exports.deleteanimeepisodelist = function (req, res) {
+    var id = req.params.id;
+    koneksi.query("DELETE FROM anime_episode WHERE id=?", [id], function (error, rows, fields) {
         if (error) {
             console.log(error);
         } else {
@@ -1010,6 +1271,77 @@ exports.deleteproducerlist = function (req, res) {
         }
     });
 };
+
+
+function timeSince(date) {
+
+    var seconds = Math.floor((new Date() - date) / 1000);
+  
+    var interval = seconds / 31536000;
+  
+    if (interval > 1) {
+      return Math.floor(interval) + " years ago";
+    }
+    interval = seconds / 2592000;
+    if (interval > 1) {
+      return Math.floor(interval) + " months ago";
+    }
+    interval = seconds / 86400;
+    if (interval > 1) {
+      return Math.floor(interval) + " days ago";
+    }
+    interval = seconds / 3600;
+    if (interval > 1) {
+      return Math.floor(interval) + " hours ago";
+    }
+    interval = seconds / 60;
+    if (interval > 1) {
+      return Math.floor(interval) + " minutes ago";
+    }
+    return Math.floor(seconds) + " seconds ago";
+}
+
+exports.updatedlist = function (req, res) {
+    // var start = req.params.start;
+    // console.log(start)
+    // if (search == '') {
+    //     var query = "SELECT * FROM anime ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    // } else {
+    //     var query = "SELECT * FROM anime WHERE title like '%"+search+"%' ORDER BY id "+escapeSansQuotes(koneksi, order)+" LIMIT "+start+","+end;
+    // }
+    koneksi.query("SELECT a.judul AS episodeJudul, a.base64 AS episodeUrl, a.gambar_url AS episodeGambar, a.views AS episodeViews, a.published_time AS episodeUploads, b.url AS animeUrl, b.title AS animeJudul, b.images_url AS animeGambar FROM anime_episode a, anime b WHERE a.animeId = b.id ORDER BY a.id DESC  ", function (error, rows, fields) {
+        if (error) {
+            console.log(error);
+        } else {
+            var Obj = [];
+            var aMin = 60 * 1000;
+            rows.forEach(function (element, index) { 
+                var episodeJudul = element.episodeJudul;
+                var episodeUrl = element.episodeUrl;
+                var episodeGambar = element.episodeGambar;
+                var episodeViews = element.episodeViews;
+                var episodeUploads = timeSince(new Date(element.episodeUploads - aMin));
+                var animeUrl = element.animeUrl+'-subtitle-indonesia';
+                var animeJudul = element.animeJudul;
+                var animeGambar = element.animeGambar;
+                Obj.push({
+                    episodeJudul: episodeJudul,
+                    episodeUrl: episodeUrl,
+                    episodeGambar: episodeGambar,
+                    episodeViews: episodeViews,
+                    episodeUploads: episodeUploads,
+                    animeUrl: animeUrl,
+                    animeJudul: animeJudul,
+                    animeGambar: animeGambar
+                })
+                // response.ok(Obj, res);
+            }); 
+
+            response.ok(Obj, res);
+        }
+    });
+};
+
 
 // end api v1
 

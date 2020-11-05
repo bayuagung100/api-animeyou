@@ -28,6 +28,7 @@ module.exports = function (app) {
 
     app.route(apiV1+'grab/anime/:q/:show').get(url.animeSearch);
 
+    app.route(apiV1+'select/anime').get(url.selectAnime);
 
     //datatables
     app.route(apiV1+'dt/animelist').post(url.dtanimelist);
@@ -35,6 +36,12 @@ module.exports = function (app) {
     app.route(apiV1+'animelist/:id').get(url.animelistbyid);
     app.route(apiV1+'animelist').put(url.updateanimelist);
     app.route(apiV1+'animelist/:id').delete(url.deleteanimelist);
+
+    app.route(apiV1+'dt/animeepisodelist').post(url.dtanimeepisodelist);
+    app.route(apiV1+'animeepisodelist').post(url.addanimeepisodelist);
+    app.route(apiV1+'animeepisodelist/:id').get(url.animeepisodelistbyid);
+    app.route(apiV1+'animeepisodelist').put(url.updateanimeepisodelist);
+    app.route(apiV1+'animeepisodelist/:id').delete(url.deleteanimeepisodelist)
 
     app.route(apiV1+'dt/genrelist').post(url.dtgenrelist);
     app.route(apiV1+'genrelist').post(url.addgenrelist);
@@ -48,5 +55,11 @@ module.exports = function (app) {
     app.route(apiV1+'producerlist').put(url.updateproducerlist);
     app.route(apiV1+'producerlist/:id').delete(url.deleteproducerlist);
     //end datatables
+
+
+    //frontend
+    app.route(apiV1+'front/updated').get(url.updatedlist);
+
+    //end frontend
 
 };

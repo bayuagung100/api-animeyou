@@ -73,3 +73,15 @@ exports.addAnime = function (message, res, status="200") {
     res.end();
 };
 
+exports.select2 = function (values, res, status="200") {
+
+    var data = {
+        'status': status,
+        'results': values
+    };
+
+    res.header("Access-Control-Allow-Origin", "*");
+    res.json(data);
+    res.end();
+};
+
