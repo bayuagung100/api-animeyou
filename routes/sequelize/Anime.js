@@ -344,7 +344,7 @@ exports.findOne = (req, res) => {
     let id = req.params.id;
     Table.findByPk(id)
         .then(data => {
-            res.send(data);
+            res.send(JSON(data));
         })
         .catch(err => {
             res.status(500).send({
